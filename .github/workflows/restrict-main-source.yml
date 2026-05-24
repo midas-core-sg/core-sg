@@ -1,0 +1,20 @@
+name: Restrict main merges
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  only-from-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR source branch
+        run: |
+          echo "Base branch: ${{ github.base_ref }}"
+          echo "Head branch: ${{ github.head_ref }}"
+
+          if [ "${{ github.head_ref }}" != "develop" ]; then
+            echo "Only pull requests from 'develop' can be merged into 'main'."
+            exit 1
+          fi

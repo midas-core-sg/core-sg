@@ -1,0 +1,105 @@
+.wy-nav-content {
+  max-width: 1080px;
+}
+
+.rst-content code.literal {
+  color: #16537e;
+}
+
+.rst-content .admonition.note {
+  border-radius: 4px;
+}
+
+.docs-diagram {
+  border: 1px solid #d7dee2;
+  border-radius: 6px;
+  background: #fbfcfd;
+  margin: 1.25rem 0;
+  padding: 1rem;
+}
+
+.docs-diagram-title {
+  color: #20333d;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+.diagram-flow {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.diagram-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.diagram-step {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #c7d4da;
+  border-left: 4px solid #24546a;
+  border-radius: 6px;
+  color: #20333d;
+  display: flex;
+  min-height: 54px;
+  padding: 0.65rem 0.75rem;
+}
+
+.diagram-step.accent {
+  background: #e7f2d9;
+  border-color: #9ab56b;
+  border-left-color: #6d8d2f;
+}
+
+.diagram-step.secondary {
+  background: #d7eef8;
+  border-color: #8ebdd0;
+  border-left-color: #24546a;
+}
+
+.diagram-step.warning {
+  background: #f8e6c8;
+  border-color: #d9b46f;
+  border-left-color: #a87418;
+}
+
+.diagram-arrow {
+  align-items: center;
+  color: #59717c;
+  display: flex;
+  font-size: 1.35rem;
+  font-weight: 700;
+  justify-content: center;
+  min-width: 1.2rem;
+}
+
+.diagram-arrow.down {
+  min-height: 0.8rem;
+  min-width: 0;
+  transform: none;
+}
+
+.diagram-note {
+  color: #52646d;
+  font-size: 0.86rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .diagram-flow {
+    flex-direction: column;
+  }
+
+  .diagram-arrow {
+    transform: rotate(90deg);
+  }
+
+  .diagram-arrow.down {
+    transform: none;
+  }
+}

@@ -1,0 +1,13 @@
+include README.md
+include LICENSE
+include THIRD_PARTY_NOTICES.md
+recursive-include core_sg *.py
+recursive-include core_sg *.pyx
+prune build
+global-exclude *.c
+global-exclude *.cpp
+global-exclude *.so
+global-exclude *.pyd
+global-exclude *.dll
+recursive-include tests *.py
+recursive-include benchmarks *.py
