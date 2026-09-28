@@ -6,7 +6,7 @@
 # 
 # This script runs clustering quality experiments for the article to 50k samples.
 # It measures quality metrics (ARI and HAI) across various configurations:
-# - Multiple distributions (synthetic)
+# - Gaussian and sparse Gaussian synthetic distributions
 # - Multiple dimensions
 # - Multiple sample sizes (capped at 50k)
 # - Compares: HDBSCAN, Optimized HDBSCAN, ScoreSG, ScoreSG Random
@@ -29,15 +29,14 @@ cd "$REPO_ROOT"
 ################################################################################
 
 # Sample sizes for quality experiments (capped at 50k for exact HDBSCAN)
-# Matches the runtime benchmark series
-SAMPLES_CSV="${SAMPLES_CSV:-5000,10000,20000,30000,40000,50000}"
+SAMPLES_CSV="${SAMPLES_CSV:-5000,10000,20000,40000,50000}"
 
-# Dimensions to test: low (2), medium (10, 20, 32), high (64, 128)
-DIMENSIONS_CSV="${DIMENSIONS_CSV:-2,10,20,32,64,128}"
+# Dimensions to test
+DIMENSIONS_CSV="${DIMENSIONS_CSV:-2,10,32,64}"
 
-# Distributions to test (all synthetic distributions supported)
+# Distributions to test
 # Options: gaussian, poisson, chi_square, gamma, beta, von_mises, gumbel, logistic, gaussian_sparse
-DISTRIBUTIONS_CSV="${DISTRIBUTIONS_CSV:-gaussian,poisson,chi_square,gamma,beta,von_mises,gumbel,logistic,gaussian_sparse}"
+DISTRIBUTIONS_CSV="${DISTRIBUTIONS_CSV:-gaussian,gaussian_sparse}"
 
 # Runtime-specific parameters (for the "runtime" benchmark group)
 # These match the runtime experiments configuration
@@ -49,15 +48,21 @@ RUNTIME_CENTERS="${RUNTIME_CENTERS:-10}"
 K_MAX="${K_MAX:-50}"
 K_MIN="${K_MIN:-2}"
 
-# Random state for reproducibility
+# Random seeds for repetitions. RANDOM_STATE is only a fallback for datasets
+# without a seed; quality_comparison.py uses the current execution seed for
+# stochastic ScoreSG components when one is available.
 RANDOM_STATE="${RANDOM_STATE:-42}"
-SEEDS_CSV="${SEEDS_CSV:-42}"
+SEEDS_CSV="${SEEDS_CSV:-1,2,3,4,5,6,7,8,9,10}"
 
 # Python interpreter
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 # Output directory for results
 OUTPUT_DIR="${OUTPUT_DIR:-benchmarking/quality/results}"
+
+# Optional Dry Bean CSV dataset path. When set, the dataset is added as
+# --real-csv beans=... and the Class column is used as the external target.
+BEANS_CSV="${BEANS_CSV:-}"
 
 # Logging level
 LOG_LEVEL="${LOG_LEVEL:-INFO}"
@@ -81,7 +86,7 @@ SEPARATED_CLUSTERS="${SEPARATED_CLUSTERS:-6}"
 SEPARATED_CLUSTER_SCALE="${SEPARATED_CLUSTER_SCALE:-0.65}"
 SEPARATED_CLUSTER_SEPARATION="${SEPARATED_CLUSTER_SEPARATION:-8.0}"
 
-# Real datasets to include (optional: iris, wine, breast_cancer, digits)
+# Optional real datasets to include, disabled by default for the article runs.
 REAL_DATASETS_CSV="${REAL_DATASETS_CSV:-}"
 
 ################################################################################
@@ -137,14 +142,13 @@ make_config_label() {
   local base_label="$1"
   local n_dimensions="$2"
   local n_samples="$3"
-  local seed="$4"
   
   # If all parameters are fixed (single value), use just the base label
-  if [[ "${#DIMS[@]}" -eq 1 && "${#SAMPLES[@]}" -eq 1 && "${#SEEDS[@]}" -eq 1 ]]; then
+  if [[ "${#DIMS[@]}" -eq 1 && "${#SAMPLES[@]}" -eq 1 ]]; then
     printf '%s' "$base_label"
   else
-    # Otherwise encode dimensions, samples, and seed in the label
-    printf '%s_d%d_n%d_seed%d' "$base_label" "$n_dimensions" "$n_samples" "$seed"
+    # Otherwise encode dimensions and samples in the label
+    printf '%s_d%d_n%d' "$base_label" "$n_dimensions" "$n_samples"
   fi
 }
 
@@ -169,6 +173,9 @@ print_config_summary() {
   log_info "Samples: $SAMPLES_CSV"
   log_info "Dimensions: $DIMENSIONS_CSV"
   log_info "Distributions: $DISTRIBUTIONS_CSV"
+  log_info "Seeds: $SEEDS_CSV"
+  log_info "Real datasets: ${REAL_DATASETS_CSV:-none}"
+  log_info "Beans CSV: ${BEANS_CSV:-none}"
   log_info "Runtime Parameters:"
   log_info "  - Samples: $RUNTIME_SAMPLES_CSV"
   log_info "  - Dimensions: $RUNTIME_DIMENSIONS_CSV"
@@ -200,6 +207,34 @@ read -r -a RUNTIME_SAMPLES <<< "$(parse_csv_list "$RUNTIME_SAMPLES_CSV")"
 read -r -a RUNTIME_DIMS <<< "$(parse_csv_list "$RUNTIME_DIMENSIONS_CSV")"
 read -r -a SEEDS <<< "$(parse_csv_list "$SEEDS_CSV")"
 
+REAL_DATASET_ARGS=()
+if [[ -n "$REAL_DATASETS_CSV" ]]; then
+  REAL_DATASET_ARGS=(--real-datasets "$REAL_DATASETS_CSV")
+else
+  REAL_DATASET_ARGS=(--no-builtin-real)
+fi
+
+BEANS_ARGS=()
+if [[ -n "$BEANS_CSV" ]]; then
+  if [[ ! -f "$BEANS_CSV" ]]; then
+    log_error "Beans CSV not found: $BEANS_CSV"
+    exit 1
+  fi
+  BEANS_ARGS=(--real-csv "beans=$BEANS_CSV" --csv-target-column beans:Class)
+fi
+
+METHODS_CSV=""
+if [[ "$RUN_HDBSCAN_FAMILY" == "1" && "$RUN_SCORESG_FAMILY" == "1" ]]; then
+  METHODS_CSV="hdbscan_generic,optimized_hdbscan,score_sg,score_sg_random"
+elif [[ "$RUN_HDBSCAN_FAMILY" == "1" ]]; then
+  METHODS_CSV="hdbscan_generic,optimized_hdbscan"
+elif [[ "$RUN_SCORESG_FAMILY" == "1" ]]; then
+  METHODS_CSV="hdbscan_generic,score_sg,score_sg_random"
+else
+  log_error "At least one method family must be enabled."
+  exit 1
+fi
+
 # Print configuration
 print_config_summary
 
@@ -213,86 +248,82 @@ log_separator
 # Main Loop: Iterate over configurations
 #
 # Structure:
-#   For each seed
-#     For each sample size
-#       For each dimension
-#         For each distribution
-#           Run HDBSCAN methods (if enabled)
-#           Run ScoreSG methods (if enabled)
+#   For each sample size
+#     For each dimension
+#       For each distribution
+#         For each seed
+#           Run one benchmark command for the current seed
 ################################################################################
 
 TOTAL_CONFIGS=0
 COMPLETED_CONFIGS=0
 SKIPPED_CONFIGS=0
 
-for seed in "${SEEDS[@]}"; do
-  for n_samples in "${SAMPLES[@]}"; do
-    # Validate against exact HDBSCAN limit
-    validate_sample_size "$n_samples"
-    
-    for n_dimensions in "${DIMS[@]}"; do
-      for distribution in "${DISTS[@]}"; do
-        # Build a unique label for this configuration
-        config_label="synthetic_${distribution}_d${n_dimensions}_n${n_samples}_seed${seed}"
-        
-        # Determine output file path
-        output_file="${OUTPUT_DIR}/${config_label}.csv"
-        
-        ((TOTAL_CONFIGS++))
-        
-        # Skip if output exists and SKIP_EXISTING is enabled
-        if [[ "$SKIP_EXISTING" == "1" && -f "$output_file" ]]; then
-          log_info "SKIP: $config_label (output exists)"
-          ((SKIPPED_CONFIGS++))
-          continue
-        fi
-        
+for n_samples in "${SAMPLES[@]}"; do
+  # Validate against exact HDBSCAN limit
+  validate_sample_size "$n_samples"
+
+  for n_dimensions in "${DIMS[@]}"; do
+    for distribution in "${DISTS[@]}"; do
+      for seed in "${SEEDS[@]}"; do
+        seed="${seed//[[:space:]]/}"
+        [[ -z "$seed" ]] && continue
+        config_label="$(make_config_label "synthetic_${distribution}" "$n_dimensions" "$n_samples")_seed${seed}"
+
+        ((++TOTAL_CONFIGS))
+
         log_separator
         log_info "Configuration: $config_label"
         log_info "Parameters: dist=$distribution, dim=$n_dimensions, n=$n_samples, seed=$seed"
-        
-        # Run HDBSCAN family methods
-        if [[ "$RUN_HDBSCAN_FAMILY" == "1" ]]; then
-          log_info "Running HDBSCAN methods..."
-          "$PYTHON_BIN" benchmarking/quality/quality_comparison.py \
-            --output-dir "$OUTPUT_DIR" \
-            --benchmark-groups synthetic \
-            --methods hdbscan_generic,optimized_hdbscan \
-            --sample-sizes "$n_samples" \
-            --dimensions "$n_dimensions" \
-            --distributions "$distribution" \
-            --k-min "$K_MIN" \
-            --k-max "$K_MAX" \
-            --seeds "$seed" \
-            --random-state "$RANDOM_STATE" \
-            --resume \
-            "$@" || log_error "HDBSCAN methods failed for $config_label"
-        fi
-        
-        # Run ScoreSG family methods
-        if [[ "$RUN_SCORESG_FAMILY" == "1" ]]; then
-          log_info "Running ScoreSG methods..."
-          "$PYTHON_BIN" benchmarking/quality/quality_comparison.py \
-            --output-dir "$OUTPUT_DIR" \
-            --benchmark-groups synthetic \
-            --methods score_sg,score_sg_random \
-            --sample-sizes "$n_samples" \
-            --dimensions "$n_dimensions" \
-            --distributions "$distribution" \
-            --k-min "$K_MIN" \
-            --k-max "$K_MAX" \
-            --seeds "$seed" \
-            --random-state "$RANDOM_STATE" \
-            --resume \
-            "$@" || log_error "ScoreSG methods failed for $config_label"
-        fi
-        
-        ((COMPLETED_CONFIGS++))
+        log_info "Methods: $METHODS_CSV"
+
+        "$PYTHON_BIN" benchmarking/quality/quality_comparison.py \
+          --output-dir "$OUTPUT_DIR" \
+          --benchmark-groups synthetic \
+          --methods "$METHODS_CSV" \
+          --sample-sizes "$n_samples" \
+          --dimensions "$n_dimensions" \
+          --distributions "$distribution" \
+          --k-min "$K_MIN" \
+          --k-max "$K_MAX" \
+          --seeds "$seed" \
+          --random-state "$RANDOM_STATE" \
+          --resume \
+          "$@" || log_error "Methods failed for $config_label"
+
+        ((++COMPLETED_CONFIGS))
         log_info "Configuration completed: $config_label"
       done
     done
   done
 done
+
+if [[ -n "$REAL_DATASETS_CSV" || -n "$BEANS_CSV" ]]; then
+  for seed in "${SEEDS[@]}"; do
+    seed="${seed//[[:space:]]/}"
+    [[ -z "$seed" ]] && continue
+    ((++TOTAL_CONFIGS))
+    log_separator
+    log_info "Configuration: real datasets seed$seed"
+    log_info "Parameters: datasets=$REAL_DATASETS_CSV, seed=$seed"
+    log_info "Methods: $METHODS_CSV"
+
+    "$PYTHON_BIN" benchmarking/quality/quality_comparison.py \
+      --output-dir "$OUTPUT_DIR" \
+      --benchmark-groups real \
+      --methods "$METHODS_CSV" \
+      "${REAL_DATASET_ARGS[@]}" \
+      --k-min "$K_MIN" \
+      --k-max "$K_MAX" \
+      --seeds "$seed" \
+      --random-state "$RANDOM_STATE" \
+      --resume \
+      "${BEANS_ARGS[@]}" \
+      "$@" || log_error "Methods failed for real datasets seed$seed"
+
+    ((++COMPLETED_CONFIGS))
+  done
+fi
 
 ################################################################################
 # Summary Report
