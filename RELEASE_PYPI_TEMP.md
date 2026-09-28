@@ -6,7 +6,7 @@ falhar.
 
 O fluxo recomendado tem duas publicacoes:
 
-1. `0.1.1rc4` no TestPyPI, para validar as novas wheels;
+1. `0.1.1rc5` no TestPyPI, para validar as novas wheels;
 2. `0.1.1` no PyPI oficial, somente depois da validacao do release candidate.
 
 Versoes publicadas no PyPI e no TestPyPI nao podem ser substituidas. Nunca
@@ -37,18 +37,18 @@ Checklist:
 O repositorio atualmente possui outras alteracoes locais. Nao use
 `git add .` sem revisar tudo primeiro.
 
-## 2. Preparar o release candidate 0.1.1rc4
+## 2. Preparar o release candidate 0.1.1rc5
 
 Edite estes metadados:
 
-- em `pyproject.toml`, defina `version = "0.1.1rc4"`;
+- em `pyproject.toml`, defina `version = "0.1.1rc5"`;
 - em `docs/source/conf.py`, mantenha `release` coerente com a versao publicada,
   caso a documentacao exiba esse valor.
 
 Depois confira:
 
 ```bash
-# Deve encontrar 0.1.1rc4 no pyproject.toml.
+# Deve encontrar 0.1.1rc5 no pyproject.toml.
 rg -n 'version =|release =' pyproject.toml docs/source/conf.py
 
 # Detecta erros simples de whitespace no diff.
@@ -120,7 +120,7 @@ git diff --cached --check
 git diff --cached
 
 # Cria e envia o commit.
-git commit -m "chore(release): prepare v0.1.1rc4"
+git commit -m "chore(release): prepare v0.1.1rc5"
 git push origin develop
 ```
 
@@ -184,18 +184,18 @@ Crie a tag somente depois dessas verificacoes:
 
 ```bash
 # Cria uma tag anotada no commit atual.
-git tag -a v0.1.1rc4 -m "core-sg v0.1.1rc4"
+git tag -a v0.1.1rc5 -m "core-sg v0.1.1rc5"
 
 # Confere a tag antes de envia-la.
-git show --stat v0.1.1rc4
+git show --stat v0.1.1rc5
 
 # O push da tag inicia o workflow de release.
-git push origin v0.1.1rc4
+git push origin v0.1.1rc5
 ```
 
 ## 8. Validar o release candidate no GitHub Actions
 
-Abra `Actions -> Release -> execucao da tag v0.1.1rc4`.
+Abra `Actions -> Release -> execucao da tag v0.1.1rc5`.
 
 Confira:
 
@@ -206,13 +206,13 @@ Confira:
 - as wheels macOS x86_64 e arm64 foram construidas e testadas;
 - cada wheel passou pela suite `pytest` depois de ser instalada;
 - `publish-testpypi` passou;
-- as 20 execucoes de `smoke-test-testpypi` instalaram a wheel publicada com
-  `--only-binary=core-sg` e executaram o pacote em Ubuntu, Windows e macOS com
-  Python 3.10 a 3.14, incluindo macOS Intel e Apple Silicon.
+- as 19 execucoes de `smoke-test-testpypi` instalaram a wheel publicada com
+  `--only-binary=core-sg` e executaram o pacote com Python 3.10 a 3.14 em
+  Ubuntu, Windows e macOS Apple Silicon, e 3.10 a 3.13 em macOS Intel.
 
-Com cinco versoes do Python e quatro alvos de plataforma, sao esperadas ate
-20 wheels, alem do sdist. Confira os artefatos do workflow e os arquivos da
-versao no TestPyPI.
+Sao esperadas 19 wheels, alem do sdist: Python 3.10 a 3.14 em Linux, Windows e
+macOS Apple Silicon, e Python 3.10 a 3.13 em macOS Intel. Confira os artefatos
+do workflow e os arquivos da versao no TestPyPI.
 
 Nao avance para o PyPI oficial se qualquer wheel esperada estiver ausente.
 
@@ -230,7 +230,7 @@ python -m pip install --no-cache-dir \
   --index-url https://test.pypi.org/simple/ \
   --extra-index-url https://pypi.org/simple/ \
   --only-binary=core-sg \
-  core-sg==0.1.1rc4
+  core-sg==0.1.1rc5
 
 # Confirma a versao e o local de importacao.
 python -c "import importlib.metadata as m, core_sg; print(m.version('core-sg')); print(core_sg.__file__)"
@@ -240,7 +240,7 @@ No Windows PowerShell, escreva o comando em uma linha ou use crase como
 continuacao de linha:
 
 ```powershell
-python -m pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --only-binary=core-sg core-sg==0.1.1rc4
+python -m pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ --only-binary=core-sg core-sg==0.1.1rc5
 ```
 
 Smoke test funcional:
@@ -251,7 +251,7 @@ python -c "from sklearn.datasets import make_blobs; from core_sg import CoreSG; 
 
 Checklist:
 
-- a versao impressa deve ser `0.1.1rc4`;
+- a versao impressa deve ser `0.1.1rc5`;
 - o caminho de `core_sg.__file__` deve estar dentro do ambiente virtual;
 - a instalacao nao deve executar Cython nem invocar compilador C/C++;
 - o smoke test deve imprimir `OK`.
@@ -263,8 +263,8 @@ Somente depois de todos os checks do release candidate:
 - altere `version = "0.1.1"` em `pyproject.toml`;
 - atualize `docs/source/conf.py`, se esse campo for mantido manualmente;
 - atualize changelog ou notas de release, se aplicavel;
-- nao altere o codigo funcional entre `rc4` e a versao final. Se houver uma
-  correcao funcional, publique primeiro outro RC, como `0.1.1rc5`.
+- nao altere o codigo funcional entre `rc5` e a versao final. Se houver uma
+  correcao funcional, publique primeiro outro RC, como `0.1.1rc6`.
 
 Confira e envie:
 
@@ -331,8 +331,9 @@ No workflow `Release`, confirme:
 - `release-context` escolheu `target: pypi`;
 - todos os builds e testes de wheels passaram novamente;
 - `publish-pypi` passou;
-- as 20 execucoes de `smoke-test-pypi` instalaram somente wheels e passaram em
-  Ubuntu, Windows, macOS Intel e macOS Apple Silicon com Python 3.10 a 3.14.
+- as 19 execucoes de `smoke-test-pypi` instalaram somente wheels e passaram
+  com Python 3.10 a 3.14 em Ubuntu, Windows e macOS Apple Silicon, e 3.10 a
+  3.13 em macOS Intel.
 
 Depois teste a instalacao publicada em um ambiente virtual novo:
 

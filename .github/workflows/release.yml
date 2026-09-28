@@ -130,15 +130,19 @@ jobs:
           - name: linux-x86_64
             os: ubuntu-latest
             cibw_archs: auto64
+            cibw_build: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           - name: windows-amd64
             os: windows-latest
             cibw_archs: auto64
+            cibw_build: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           - name: macos-x86_64
             os: macos-15-intel
             cibw_archs: x86_64
+            cibw_build: "cp310-* cp311-* cp312-* cp313-*"
           - name: macos-arm64
             os: macos-15
             cibw_archs: arm64
+            cibw_build: "cp310-* cp311-* cp312-* cp313-* cp314-*"
 
     steps:
       - name: Checkout repository
@@ -159,6 +163,7 @@ jobs:
       - name: Build platform wheels
         env:
           CIBW_ARCHS: ${{ matrix.cibw_archs }}
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_BUILD_VERBOSITY: "1"
         run: python -m cibuildwheel --output-dir dist
 
@@ -212,6 +217,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-15-intel, macos-15]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        exclude:
+          - os: macos-15-intel
+            python-version: "3.14"
 
     steps:
       - name: Set up Python
@@ -357,6 +365,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-15-intel, macos-15]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        exclude:
+          - os: macos-15-intel
+            python-version: "3.14"
 
     steps:
       - name: Set up Python
