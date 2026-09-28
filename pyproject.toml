@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "core-sg"
-version = "0.1.1rc3"
+version = "0.1.1rc4"
 description = "Core-SG graph construction and MST extraction utilities for HDBSCAN-style clustering."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -97,7 +97,7 @@ build = ["cp310-*", "cp311-*", "cp312-*", "cp313-*", "cp314-*"]
 skip = ["*-musllinux_*", "*-manylinux_i686", "pp*"]
 archs = ["auto64"]
 test-extras = ["test"]
-test-sources = ["tests", "benchmarking"]
+test-sources = ["tests", "benchmarking", "pyproject.toml"]
 test-command = "python -m pytest tests -v -ra"
 
 [tool.pytest.ini_options]

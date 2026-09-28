@@ -338,7 +338,8 @@ class TestHDBSCANAdapter:
 
 
 def test_core_sg_module_does_not_import_hdbscan_private_apis():
-    source = Path("core_sg/core_sg.py").read_text()
+    core_sg_module = importlib.import_module("core_sg.core_sg")
+    source = Path(core_sg_module.__file__).read_text(encoding="utf-8")
 
     assert "from hdbscan" not in source
     assert "import hdbscan" not in source
