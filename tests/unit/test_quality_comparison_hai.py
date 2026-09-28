@@ -10,6 +10,7 @@ from benchmarking.quality.quality_comparison import (
     exact_hai,
     reusable_mst_array,
     result_row,
+    summarize_rows,
 )
 
 
@@ -132,3 +133,82 @@ def test_reusable_mst_array_reconstructs_when_cache_is_missing(monkeypatch):
     result = reusable_mst_array(Core(), k=2, k_max=2)
 
     assert np.array_equal(result, expected)
+
+
+def test_summary_aggregates_seed_replicates_by_configuration():
+    rows = [
+        {
+            "benchmark_group": "synthetic",
+            "dataset": "gaussian-iid-n20-d2-seed1",
+            "dataset_config": "gaussian-iid-n20-d2",
+            "family": "synthetic",
+            "distribution": "gaussian",
+            "structure": "iid",
+            "n_samples": 20,
+            "n_features": 2,
+            "method": "ScoreSG",
+            "method_key": "score_sg",
+            "k": 2,
+            "seed": 1,
+            "status": "ok",
+            "ari_vs_hdbscan_generic": 0.8,
+            "ari_vs_true": np.nan,
+            "hai": 0.9,
+            "total_seconds": 1.0,
+            "workflow_seconds_contribution": 1.0,
+            "n_clusters_found": 2,
+        },
+        {
+            "benchmark_group": "synthetic",
+            "dataset": "gaussian-iid-n20-d2-seed2",
+            "dataset_config": "gaussian-iid-n20-d2",
+            "family": "synthetic",
+            "distribution": "gaussian",
+            "structure": "iid",
+            "n_samples": 20,
+            "n_features": 2,
+            "method": "ScoreSG",
+            "method_key": "score_sg",
+            "k": 2,
+            "seed": 2,
+            "status": "ok",
+            "ari_vs_hdbscan_generic": 1.0,
+            "ari_vs_true": np.nan,
+            "hai": 1.0,
+            "total_seconds": 2.0,
+            "workflow_seconds_contribution": 2.0,
+            "n_clusters_found": 3,
+        },
+    ]
+    rows.extend(
+        [
+            {
+                **rows[0],
+                "k": 3,
+                "ari_vs_hdbscan_generic": 1.0,
+                "hai": 1.0,
+                "total_seconds": 3.0,
+                "workflow_seconds_contribution": 3.0,
+            },
+            {
+                **rows[1],
+                "k": 3,
+                "ari_vs_hdbscan_generic": 1.0,
+                "hai": 1.0,
+                "total_seconds": 4.0,
+                "workflow_seconds_contribution": 4.0,
+            },
+        ]
+    )
+
+    summary = summarize_rows(rows)
+
+    assert summary.shape[0] == 1
+    row = summary.iloc[0]
+    assert row["dataset_config"] == "gaussian-iid-n20-d2"
+    assert row["seed_values"] == 2
+    assert row["dataset_replicates"] == 2
+    assert row["k_values"] == 4
+    assert row["distinct_k_values"] == 2
+    assert np.isclose(row["mean_hai"], 0.975)
+    assert np.isclose(row["std_hai"], np.sqrt(0.00125))

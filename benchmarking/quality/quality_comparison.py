@@ -288,6 +288,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         default=list(DEFAULT_REAL_DATASETS),
     )
     parser.add_argument(
+        "--no-builtin-real",
+        action="store_true",
+        help="Skip built-in real datasets and use only datasets passed with --real-csv.",
+    )
+    parser.add_argument(
         "--real-csv",
         action="append",
         type=parse_named_path,
@@ -536,6 +541,16 @@ def load_builtin_real_dataset(name: str) -> QualityDataset:
     )
 
 
+def with_dataset_seed(dataset: QualityDataset, seed: int) -> QualityDataset:
+    return QualityDataset(
+        **{
+            **asdict(dataset),
+            "name": f"{dataset.name}-seed{seed}",
+            "seed": seed,
+        }
+    )
+
+
 def load_csv_real_dataset(
     name: str,
     path: Path,
@@ -585,36 +600,39 @@ def load_csv_real_dataset(
 
 
 def iter_real_datasets(args: argparse.Namespace) -> Iterable[QualityDataset]:
-    for name in args.real_datasets:
-        dataset = load_builtin_real_dataset(name)
-        if (
-            args.max_real_samples is not None
-            and dataset.X.shape[0] > args.max_real_samples
-        ):
-            yield QualityDataset(
-                **{
-                    **asdict(dataset),
-                    "X": dataset.X[: args.max_real_samples],
-                    "y_true": (
-                        None
-                        if dataset.y_true is None
-                        else dataset.y_true[: args.max_real_samples]
-                    ),
-                }
-            )
-        else:
-            yield dataset
+    if not args.no_builtin_real:
+        for name in args.real_datasets:
+            dataset = load_builtin_real_dataset(name)
+            if (
+                args.max_real_samples is not None
+                and dataset.X.shape[0] > args.max_real_samples
+            ):
+                dataset = QualityDataset(
+                    **{
+                        **asdict(dataset),
+                        "X": dataset.X[: args.max_real_samples],
+                        "y_true": (
+                            None
+                            if dataset.y_true is None
+                            else dataset.y_true[: args.max_real_samples]
+                        ),
+                    }
+                )
+            for seed in args.seeds:
+                yield with_dataset_seed(dataset, seed)
 
     drop_mapping = parse_column_mapping(args.csv_drop_column)
     target_mapping = parse_column_mapping(args.csv_target_column)
     for name, path in args.real_csv:
-        yield load_csv_real_dataset(
+        dataset = load_csv_real_dataset(
             name,
             path,
             drop_columns=drop_mapping.get(name, []),
             target_columns=target_mapping.get(name, []),
             max_samples=args.max_real_samples,
         )
+        for seed in args.seeds:
+            yield with_dataset_seed(dataset, seed)
 
 
 def iter_datasets(args: argparse.Namespace) -> Iterable[QualityDataset]:
@@ -1137,10 +1155,20 @@ def n_clusters(labels: np.ndarray | None) -> int | float:
     return len(unique) - int(-1 in unique)
 
 
+def dataset_config_name(dataset: QualityDataset) -> str:
+    if dataset.seed is None:
+        return dataset.name
+    seed_suffix = f"-seed{dataset.seed}"
+    if dataset.name.endswith(seed_suffix):
+        return dataset.name[: -len(seed_suffix)]
+    return dataset.name
+
+
 def base_row(dataset: QualityDataset, *, k: int, k_max: int) -> dict[str, object]:
     return {
         "benchmark_group": dataset.benchmark_group,
         "dataset": dataset.name,
+        "dataset_config": dataset_config_name(dataset),
         "family": dataset.family,
         "distribution": dataset.distribution,
         "structure": dataset.structure,
@@ -1234,6 +1262,7 @@ def run_batch(
         effective_k_max,
     )
 
+    method_random_state = dataset.seed if dataset.seed is not None else random_state
     reusable: dict[str, tuple[CoreSG | None, float, str, str]] = {}
     for method in methods:
         if method in {"score_sg", "score_sg_random"}:
@@ -1241,7 +1270,7 @@ def run_batch(
                 method,
                 dataset.X,
                 k_max=effective_k_max,
-                random_state=random_state,
+                random_state=method_random_state,
                 approx_knn_kwargs=approx_knn_kwargs,
             )
             LOGGER.info(
@@ -1295,34 +1324,72 @@ def summarize_rows(rows: list[dict[str, object]]) -> pd.DataFrame:
     frame = pd.DataFrame(rows)
     if frame.empty:
         return frame
+    if "dataset_config" not in frame.columns:
+        frame["dataset_config"] = frame["dataset"]
 
-    grouped = frame.groupby(
-        [
-            "benchmark_group",
-            "dataset",
-            "family",
-            "distribution",
-            "structure",
-            "n_samples",
-            "n_features",
-            "method",
-            "method_key",
-        ],
-        dropna=False,
+    group_columns = [
+        "benchmark_group",
+        "dataset_config",
+        "family",
+        "distribution",
+        "structure",
+        "n_samples",
+        "n_features",
+        "method",
+        "method_key",
+    ]
+    per_seed = (
+        frame.groupby([*group_columns, "dataset", "seed"], dropna=False)
+        .agg(
+            k_values=("k", "count"),
+            distinct_k_values=("k", "nunique"),
+            successful_k_values=("status", lambda values: int((values == "ok").sum())),
+            failed_k_values=("status", lambda values: int((values != "ok").sum())),
+            mean_ari_vs_hdbscan_generic=("ari_vs_hdbscan_generic", "mean"),
+            min_ari_vs_hdbscan_generic=("ari_vs_hdbscan_generic", "min"),
+            mean_ari_vs_true=("ari_vs_true", "mean"),
+            min_ari_vs_true=("ari_vs_true", "min"),
+            mean_hai=("hai", "mean"),
+            min_hai=("hai", "min"),
+            mean_total_seconds=("total_seconds", "mean"),
+            cumulative_workflow_seconds=("workflow_seconds_contribution", "sum"),
+            mean_n_clusters_found=("n_clusters_found", "mean"),
+        )
+        .reset_index()
     )
+
+    def seed_count(values):
+        return int(pd.Series(values).dropna().nunique())
+
+    def std(values):
+        return float(pd.Series(values).std(ddof=1))
+
+    grouped = per_seed.groupby(group_columns, dropna=False)
     return grouped.agg(
-        k_values=("k", "count"),
-        successful_k_values=("status", lambda values: int((values == "ok").sum())),
-        failed_k_values=("status", lambda values: int((values != "ok").sum())),
-        mean_ari_vs_hdbscan_generic=("ari_vs_hdbscan_generic", "mean"),
-        min_ari_vs_hdbscan_generic=("ari_vs_hdbscan_generic", "min"),
-        mean_ari_vs_true=("ari_vs_true", "mean"),
-        min_ari_vs_true=("ari_vs_true", "min"),
-        mean_hai=("hai", "mean"),
-        min_hai=("hai", "min"),
-        mean_total_seconds=("total_seconds", "mean"),
-        cumulative_workflow_seconds=("workflow_seconds_contribution", "sum"),
-        mean_n_clusters_found=("n_clusters_found", "mean"),
+        k_values=("k_values", "sum"),
+        distinct_k_values=("distinct_k_values", "max"),
+        seed_values=("seed", seed_count),
+        dataset_replicates=("dataset", "nunique"),
+        successful_k_values=("successful_k_values", "sum"),
+        failed_k_values=("failed_k_values", "sum"),
+        mean_ari_vs_hdbscan_generic=("mean_ari_vs_hdbscan_generic", "mean"),
+        std_ari_vs_hdbscan_generic=("mean_ari_vs_hdbscan_generic", std),
+        min_ari_vs_hdbscan_generic=("min_ari_vs_hdbscan_generic", "min"),
+        mean_ari_vs_true=("mean_ari_vs_true", "mean"),
+        std_ari_vs_true=("mean_ari_vs_true", std),
+        min_ari_vs_true=("min_ari_vs_true", "min"),
+        mean_hai=("mean_hai", "mean"),
+        std_hai=("mean_hai", std),
+        min_hai=("min_hai", "min"),
+        mean_total_seconds=("mean_total_seconds", "mean"),
+        std_total_seconds=("mean_total_seconds", std),
+        cumulative_workflow_seconds=("cumulative_workflow_seconds", "sum"),
+        mean_cumulative_workflow_seconds=("cumulative_workflow_seconds", "mean"),
+        std_cumulative_workflow_seconds=("cumulative_workflow_seconds", std),
+        mean_workflow_seconds=("cumulative_workflow_seconds", "mean"),
+        std_workflow_seconds=("cumulative_workflow_seconds", std),
+        mean_n_clusters_found=("mean_n_clusters_found", "mean"),
+        std_n_clusters_found=("mean_n_clusters_found", std),
     ).reset_index()
 
 
@@ -1337,21 +1404,19 @@ def write_batch_outputs(batch: Batch, rows: list[dict[str, object]]) -> None:
 def merge_outputs(output_dir: Path) -> dict[str, int]:
     run_root = output_dir / "_runs"
     detail_frames = []
-    summary_frames = []
     for path in sorted(run_root.glob("*/quality_comparison_by_k.csv")):
         detail_frames.append(pd.read_csv(path))
-    for path in sorted(run_root.glob("*/quality_comparison_summary.csv")):
-        summary_frames.append(pd.read_csv(path))
 
     output_dir.mkdir(parents=True, exist_ok=True)
     detail_rows = 0
     summary_rows = 0
     if detail_frames:
         detail = pd.concat(detail_frames, ignore_index=True)
+        if "dataset_config" not in detail.columns:
+            detail["dataset_config"] = detail["dataset"]
         detail.to_csv(output_dir / "quality_comparison_by_k.csv", index=False)
         detail_rows = int(detail.shape[0])
-    if summary_frames:
-        summary = pd.concat(summary_frames, ignore_index=True)
+        summary = summarize_rows(detail.to_dict("records"))
         summary.to_csv(output_dir / "quality_comparison_summary.csv", index=False)
         summary_rows = int(summary.shape[0])
     return {"detail_rows": detail_rows, "summary_rows": summary_rows}
