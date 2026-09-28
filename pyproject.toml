@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "core-sg"
-version = "0.1.1rc5"
+version = "0.0.2"
 description = "Core-SG graph construction and MST extraction utilities for HDBSCAN-style clustering."
 readme = "README.md"
 requires-python = ">=3.10"
