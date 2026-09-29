@@ -1,0 +1,4 @@
+dataset,family,distribution,structure,variant,n_samples,n_features,seed,normalized,k_min,k_max,n_k_values,connected_all_k,connected_rate,n_components,largest_component_size,smallest_component_size,n_edges,reinforcement_vertex_count,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,build_seconds,connectivity_check_seconds
+iris,real,real_builtin,real,approx_knn_only,150,4,,True,2,50,49,True,1.0,1,150,150,7500,0,12,23,1,1,1,1,17.266163945023436,0.018976040999405086
+iris,real,real_builtin,real,random_sqrt_clique,150,4,,True,2,50,49,True,1.0,1,150,150,7566,12,12,23,1,1,1,1,17.266163945023436,0.01862671200069599
+iris,real,real_builtin,real,score_sg_antihub,150,4,,True,2,50,49,True,1.0,1,150,150,7566,12,12,23,1,1,1,1,17.266163945023436,0.018560869008069858

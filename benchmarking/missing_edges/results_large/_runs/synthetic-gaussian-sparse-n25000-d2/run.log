@@ -1,0 +1,6 @@
+22:51:38 | INFO | Building supports | dataset=gaussian_sparse-iid-n25000-d2-seed42 | n=25000 | d=2 | k_max=50
+/home/gab04/Desktop/core-sg/.venv310/lib/python3.10/site-packages/numba/np/ufunc/parallel.py:373: NumbaWarning: The TBB threading layer requires TBB version 2021 update 6 or later i.e., TBB_INTERFACE_VERSION >= 12060. Found TBB_INTERFACE_VERSION = 12050. The TBB threading layer is disabled.
+  warnings.warn(problem)
+22:52:10 | INFO | Building supports | dataset=gaussian_sparse-separated-n25000-d2-seed42 | n=25000 | d=2 | k_max=50
+22:52:22 | INFO | Wrote connectivity results to benchmarking/missing_edges/results_large/_runs/synthetic-gaussian-sparse-n25000-d2
+22:52:22 | INFO | Wrote tie diagnostics to benchmarking/unties/results_large/_runs/synthetic-gaussian-sparse-n25000-d2

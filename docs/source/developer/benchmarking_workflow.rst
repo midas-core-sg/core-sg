@@ -5,17 +5,23 @@ Benchmark sources live in ``benchmarking/``.
 
 Useful files:
 
-``benchmarking/script.py``
+``benchmarking/run_time/scripts/script.py``
    Main repeated multi-``k`` benchmark.
 
-``benchmarking/score_sg_script.py``
+``benchmarking/run_time/scripts/score_sg_script.py``
    Score-SG focused experiments.
 
-``benchmarking/results/``
-   CSV result files.
+``benchmarking/run_time/results/``
+   Runtime CSV result files.
 
-``benchmarking/report_assets/``
-   Generated plots used by the documentation.
+``benchmarking/run_time/report_assets/``
+   Generated runtime plots used by the documentation.
+
+``benchmarking/missing_edges/``
+   Missing-edge connectivity experiment and results.
+
+``benchmarking/unties/``
+   Anti-hub tie-breaking diagnostics and plots.
 
 Documentation figures are refreshed with:
 

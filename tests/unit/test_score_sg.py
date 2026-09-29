@@ -296,6 +296,54 @@ class TestScoreSGBuild:
 
         assert approx_knn_kwargs == {"n_neighbors": 1, "random_state": 99}
 
+    def test_build_approximate_knn_graph_ignores_none_kwargs(
+        self, score_sg_module, monkeypatch
+    ):
+        seen = {}
+
+        class FakeNNDescent:
+            def __init__(self, X, metric="euclidean", **kwargs):
+                del X, metric
+                seen["kwargs"] = kwargs
+                self._neighbor_graph = (
+                    np.array(
+                        [
+                            [0, 1, 2],
+                            [1, 0, 2],
+                            [2, 1, 0],
+                        ],
+                        dtype=np.int64,
+                    ),
+                    np.array(
+                        [
+                            [0.0, 1.0, 2.0],
+                            [0.0, 1.0, 1.5],
+                            [0.0, 1.5, 2.0],
+                        ],
+                        dtype=np.float64,
+                    ),
+                )
+
+            @property
+            def neighbor_graph(self):
+                return self._neighbor_graph
+
+        monkeypatch.setattr(
+            score_sg_module, "_get_pynndescent_class", lambda: FakeNNDescent
+        )
+
+        score_sg_module.build_approximate_knn_graph(
+            make_sample_X()[:3],
+            2,
+            metric="euclidean",
+            p=2,
+            random_state=17,
+            approx_knn_kwargs={"n_neighbors": None, "n_trees": None},
+        )
+
+        assert seen["kwargs"]["n_neighbors"] == 3
+        assert "n_trees" not in seen["kwargs"]
+
     def test_build_approximate_knn_graph_passes_minkowski_metric_kwargs(
         self, score_sg_module, monkeypatch
     ):

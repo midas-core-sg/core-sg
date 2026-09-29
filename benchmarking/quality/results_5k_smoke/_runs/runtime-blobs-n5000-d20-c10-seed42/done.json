@@ -1,0 +1,10 @@
+{
+  "batch": "runtime-blobs-n5000-d20-c10-seed42",
+  "dataset": {
+    "n_features": 20,
+    "n_samples": 5000,
+    "name": "runtime-blobs-n5000-d20-c10-seed42"
+  },
+  "elapsed_seconds": 174.35088752300362,
+  "rows": 196
+}

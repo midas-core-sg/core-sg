@@ -81,7 +81,13 @@ def build_approximate_knn_graph(
     approx_knn_kwargs: dict[str, Any] | None,
 ) -> tuple[np.ndarray, np.ndarray]:
     NNDescent = _get_pynndescent_class()
-    kwargs = {} if approx_knn_kwargs is None else dict(approx_knn_kwargs)
+    kwargs = (
+        {}
+        if approx_knn_kwargs is None
+        else {
+            key: value for key, value in approx_knn_kwargs.items() if value is not None
+        }
+    )
     if kwargs.get("compressed", False):
         raise ValueError(
             "score-sg requires access to NNDescent.neighbor_graph, so "
@@ -202,21 +208,24 @@ def build_selected_clique(
     metric: str,
     p: int,
 ) -> tuple[np.ndarray, np.ndarray]:
-    if selected.shape[0] < 2:
+    selected = np.asarray(selected, dtype=np.int64).reshape(-1)
+    n_selected = int(selected.shape[0])
+    if n_selected < 2:
         empty = np.empty((0, 3), dtype=np.float64)
         return empty, empty
 
-    left_pos, right_pos = np.triu_indices(selected.shape[0], k=1)
+    left_pos, right_pos = np.triu_indices(n_selected, k=1)
     left = selected[left_pos]
     right = selected[right_pos]
     distances = _compute_exact_edge_distances(X, left, right, metric=metric, p=p)
+    edge_count = int(distances.shape[0])
 
-    metric_edges = np.empty((distances.shape[0], 3), dtype=np.float64)
+    metric_edges = np.empty((edge_count, 3), dtype=np.float64)
     metric_edges[:, 0] = np.maximum(left, right)
     metric_edges[:, 1] = np.minimum(left, right)
     metric_edges[:, 2] = distances
 
-    support_edges = np.empty((distances.shape[0], 3), dtype=np.float64)
+    support_edges = np.empty((edge_count, 3), dtype=np.float64)
     support_edges[:, 0] = np.minimum(left, right)
     support_edges[:, 1] = np.maximum(left, right)
     support_edges[:, 2] = -1.0

@@ -1,0 +1,30 @@
+{
+  "batch": "real-wine",
+  "returncode": 0,
+  "elapsed_seconds": 28.548425373010105,
+  "command": [
+    "/home/gab04/Desktop/core-sg/.venv310/bin/python",
+    "benchmarking/missing_edges/missing_edges_connectivity.py",
+    "--preset",
+    "paper",
+    "--output-dir",
+    "benchmarking/missing_edges/results_large/_runs/real-wine",
+    "--tie-output-dir",
+    "benchmarking/unties/results_large/_runs/real-wine",
+    "--k-min",
+    "2",
+    "--k-max",
+    "50",
+    "--random-state",
+    "42",
+    "--seeds",
+    "42",
+    "--no-plots",
+    "--log-level",
+    "INFO",
+    "--no-synthetic",
+    "--real-datasets",
+    "wine"
+  ],
+  "log": "benchmarking/missing_edges/results_large/_runs/real-wine/run.log"
+}

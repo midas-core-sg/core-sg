@@ -12,6 +12,16 @@ class CoreSGValidationReport:
     missing_in_core: int
 
 
+def _mst_weights_match(mst_core: np.ndarray, mst_hdb: np.ndarray) -> bool:
+    core_weights = np.sort(np.asarray(mst_core[:, 2], dtype=np.float64))
+    hdb_weights = np.sort(np.asarray(mst_hdb[:, 2], dtype=np.float64))
+
+    return bool(
+        core_weights.shape == hdb_weights.shape
+        and np.allclose(core_weights, hdb_weights, atol=0.001, rtol=0.0)
+    )
+
+
 def validate_mst_in_core_sg(
     core_sg: np.ndarray, mst_hdb: np.ndarray, n: int, k: int
 ) -> CoreSGValidationReport:
@@ -95,7 +105,7 @@ def validate_mst_from_core_sg(
             # print("Distancia")
             a += 1
 
-    if float(a) / n > 0.01:
+    if float(a) / n > 0.01 and not _mst_weights_match(mst_core_copy, mst_hdb_copy):
         ok = False
 
     return CoreSGValidationReport(

@@ -939,7 +939,7 @@ class CoreSG:
         self._dense_distance_matrix_ = (
             tree_to_labels_data if self.algorithm == "core-sg" else None
         )
-        self.anti_hubs_ = anti_hubs
+        self._score_sg_anti_hubs = anti_hubs
         t1 = time()
 
         _emit_progress(

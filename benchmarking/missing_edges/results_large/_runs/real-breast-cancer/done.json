@@ -1,0 +1,30 @@
+{
+  "batch": "real-breast-cancer",
+  "returncode": 0,
+  "elapsed_seconds": 28.127433924993966,
+  "command": [
+    "/home/gab04/Desktop/core-sg/.venv310/bin/python",
+    "benchmarking/missing_edges/missing_edges_connectivity.py",
+    "--preset",
+    "paper",
+    "--output-dir",
+    "benchmarking/missing_edges/results_large/_runs/real-breast-cancer",
+    "--tie-output-dir",
+    "benchmarking/unties/results_large/_runs/real-breast-cancer",
+    "--k-min",
+    "2",
+    "--k-max",
+    "50",
+    "--random-state",
+    "42",
+    "--seeds",
+    "42",
+    "--no-plots",
+    "--log-level",
+    "INFO",
+    "--no-synthetic",
+    "--real-datasets",
+    "breast_cancer"
+  ],
+  "log": "benchmarking/missing_edges/results_large/_runs/real-breast-cancer/run.log"
+}

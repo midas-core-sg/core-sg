@@ -1,0 +1,2 @@
+dataset,family,distribution,structure,n_samples,n_features,seed,normalized,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,connected_all_k,n_components
+chi_square-separated-n500000-d2-seed42,synthetic,chi_square,separated_clusters,500000,2,42,False,707,27,180,57,3,3,True,1

@@ -1,0 +1,10 @@
+{
+  "batch": "gaussian-sparse-separated-n10000-d2-seed42",
+  "dataset": {
+    "n_features": 2,
+    "n_samples": 10000,
+    "name": "gaussian_sparse-separated-n10000-d2-seed42"
+  },
+  "elapsed_seconds": 789.1889264339989,
+  "rows": 196
+}

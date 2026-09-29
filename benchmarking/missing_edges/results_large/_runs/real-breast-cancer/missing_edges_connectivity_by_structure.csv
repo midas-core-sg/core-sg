@@ -1,0 +1,6 @@
+,,count,sum
+,,connected_all_k,connected_all_k
+structure,variant,,
+real,approx_knn_only,1,1
+real,random_sqrt_clique,1,1
+real,score_sg_antihub,1,1

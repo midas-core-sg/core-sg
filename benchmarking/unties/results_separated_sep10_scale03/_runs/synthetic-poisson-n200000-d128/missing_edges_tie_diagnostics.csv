@@ -1,0 +1,2 @@
+dataset,family,distribution,structure,n_samples,n_features,seed,normalized,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,connected_all_k,n_components
+poisson-separated-n200000-d128-seed42,synthetic,poisson,separated_clusters,200000,128,42,False,447,0,20416,447,1,1,True,1

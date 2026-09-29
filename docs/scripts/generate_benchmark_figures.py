@@ -20,8 +20,8 @@ except Exception:  # pragma: no cover - fallback for broken local scientific env
 ROOT = Path(__file__).resolve().parents[2]
 DOCS_ROOT = ROOT / "docs"
 OUT = DOCS_ROOT / "source" / "_static" / "images" / "benchmarks"
-ASSETS = ROOT / "benchmarking" / "report_assets"
-RESULTS = ROOT / "benchmarking" / "results"
+ASSETS = ROOT / "benchmarking" / "run_time" / "report_assets"
+RESULTS = ROOT / "benchmarking" / "run_time" / "results"
 
 
 def copy_existing_assets() -> None:
@@ -60,7 +60,7 @@ def generated_summary(df) -> None:
         draw.rectangle((20, 20, 980, 400), outline="#24546a", width=3)
         draw.text(
             (55, 80),
-            "Benchmark figures are copied from benchmarking/report_assets.",
+            "Benchmark figures are copied from benchmarking/run_time/report_assets.",
             fill="#20333d",
         )
         draw.text(

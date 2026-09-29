@@ -1,0 +1,5 @@
+06:27:59 | INFO | Building supports | dataset=gamma-separated-n5000-d64-seed42 | n=5000 | d=64 | k_max=50
+/home/gab04/Desktop/core-sg/.venv310/lib/python3.10/site-packages/numba/np/ufunc/parallel.py:373: NumbaWarning: The TBB threading layer requires TBB version 2021 update 6 or later i.e., TBB_INTERFACE_VERSION >= 12060. Found TBB_INTERFACE_VERSION = 12050. The TBB threading layer is disabled.
+  warnings.warn(problem)
+06:28:21 | INFO | Wrote connectivity results to benchmarking/missing_edges/results_separated_sep10_scale03/_runs/synthetic-gamma-n5000-d64
+06:28:21 | INFO | Wrote tie diagnostics to benchmarking/unties/results_separated_sep10_scale03/_runs/synthetic-gamma-n5000-d64

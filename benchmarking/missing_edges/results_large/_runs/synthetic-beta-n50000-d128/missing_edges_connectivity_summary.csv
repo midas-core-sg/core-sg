@@ -1,0 +1,7 @@
+dataset,family,distribution,structure,variant,n_samples,n_features,seed,normalized,k_min,k_max,n_k_values,connected_all_k,connected_rate,n_components,largest_component_size,smallest_component_size,n_edges,reinforcement_vertex_count,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,build_seconds,connectivity_check_seconds
+beta-iid-n50000-d128-seed42,synthetic,beta,iid,approx_knn_only,50000,128,42,False,2,50,49,True,1.0,1,50000,50000,2500000,0,223,0,3947,223,2,2,37.10976420099905,6.369593577997875
+beta-iid-n50000-d128-seed42,synthetic,beta,iid,random_sqrt_clique,50000,128,42,False,2,50,49,True,1.0,1,50000,50000,2524753,223,223,0,3947,223,2,2,37.10976420099905,6.540302041998075
+beta-iid-n50000-d128-seed42,synthetic,beta,iid,score_sg_antihub,50000,128,42,False,2,50,49,True,1.0,1,50000,50000,2524753,223,223,0,3947,223,2,2,37.10976420099905,6.420934150002722
+beta-separated-n50000-d128-seed42,synthetic,beta,separated_clusters,approx_knn_only,50000,128,42,False,2,50,49,False,0.0,6,8334,8333,2500000,0,223,0,2259,223,1,1,15.67912547099695,6.554632485000184
+beta-separated-n50000-d128-seed42,synthetic,beta,separated_clusters,random_sqrt_clique,50000,128,42,False,2,50,49,True,1.0,1,50000,50000,2524753,223,223,0,2259,223,1,1,15.67912547099695,6.512079140004062
+beta-separated-n50000-d128-seed42,synthetic,beta,separated_clusters,score_sg_antihub,50000,128,42,False,2,50,49,True,1.0,1,50000,50000,2524753,223,223,0,2259,223,1,1,15.67912547099695,6.553017999001895

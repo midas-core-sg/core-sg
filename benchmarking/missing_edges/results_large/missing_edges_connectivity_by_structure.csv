@@ -1,0 +1,12 @@
+,,count,sum
+,,connected_all_k,connected_all_k
+structure,variant,,
+iid,approx_knn_only,405,386
+iid,random_sqrt_clique,405,386
+iid,score_sg_antihub,405,386
+real,approx_knn_only,4,4
+real,random_sqrt_clique,4,4
+real,score_sg_antihub,4,4
+separated_clusters,approx_knn_only,405,18
+separated_clusters,random_sqrt_clique,405,390
+separated_clusters,score_sg_antihub,405,389

@@ -1,0 +1,7 @@
+dataset,family,distribution,structure,variant,n_samples,n_features,seed,normalized,k_min,k_max,n_k_values,connected_all_k,connected_rate,n_components,largest_component_size,smallest_component_size,n_edges,reinforcement_vertex_count,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,build_seconds,connectivity_check_seconds
+von_mises-iid-n1000-d64-seed42,synthetic,von_mises,iid,approx_knn_only,1000,64,42,False,2,50,49,True,1.0,1,1000,1000,50000,0,31,0,35,31,1,1,17.589819307992002,0.12116366501140874
+von_mises-iid-n1000-d64-seed42,synthetic,von_mises,iid,random_sqrt_clique,1000,64,42,False,2,50,49,True,1.0,1,1000,1000,50465,31,31,0,35,31,1,1,17.589819307992002,0.11232565999671351
+von_mises-iid-n1000-d64-seed42,synthetic,von_mises,iid,score_sg_antihub,1000,64,42,False,2,50,49,True,1.0,1,1000,1000,50465,31,31,0,35,31,1,1,17.589819307992002,0.11188454099465162
+von_mises-separated-n1000-d64-seed42,synthetic,von_mises,separated_clusters,approx_knn_only,1000,64,42,False,2,50,49,False,0.0,6,167,166,50000,0,31,3,10,2,1,1,0.342123239999637,0.11255901200638618
+von_mises-separated-n1000-d64-seed42,synthetic,von_mises,separated_clusters,random_sqrt_clique,1000,64,42,False,2,50,49,True,1.0,1,1000,1000,50465,31,31,3,10,2,1,1,0.342123239999637,0.10679632201208733
+von_mises-separated-n1000-d64-seed42,synthetic,von_mises,separated_clusters,score_sg_antihub,1000,64,42,False,2,50,49,True,1.0,1,1000,1000,50465,31,31,3,10,2,1,1,0.342123239999637,0.11637732900271658

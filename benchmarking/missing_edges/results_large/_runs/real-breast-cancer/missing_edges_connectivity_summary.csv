@@ -1,0 +1,4 @@
+dataset,family,distribution,structure,variant,n_samples,n_features,seed,normalized,k_min,k_max,n_k_values,connected_all_k,connected_rate,n_components,largest_component_size,smallest_component_size,n_edges,reinforcement_vertex_count,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,build_seconds,connectivity_check_seconds
+breast_cancer,real,real_builtin,real,approx_knn_only,569,30,,True,2,50,49,True,1.0,1,569,569,28450,0,23,7,6,4,1,1,17.564287109998986,0.07216958299977705
+breast_cancer,real,real_builtin,real,random_sqrt_clique,569,30,,True,2,50,49,True,1.0,1,569,569,28703,23,23,7,6,4,1,1,17.564287109998986,0.0728745239903219
+breast_cancer,real,real_builtin,real,score_sg_antihub,569,30,,True,2,50,49,True,1.0,1,569,569,28703,23,23,7,6,4,1,1,17.564287109998986,0.07544568899902515

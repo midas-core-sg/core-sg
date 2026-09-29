@@ -1,0 +1,9 @@
+,,count,sum
+,,connected_all_k,connected_all_k
+structure,variant,,
+iid,approx_knn_only,1,0
+iid,random_sqrt_clique,1,0
+iid,score_sg_antihub,1,0
+separated_clusters,approx_knn_only,1,0
+separated_clusters,random_sqrt_clique,1,1
+separated_clusters,score_sg_antihub,1,1

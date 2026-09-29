@@ -1,0 +1,20 @@
+{
+  "benchmark_groups": [
+    "runtime"
+  ],
+  "completed_batches_this_run": 1,
+  "detail_rows": 196,
+  "failed_batches_this_run": 0,
+  "hai_definition": "exact_single_linkage_pairwise_smallest_common_cluster_size_agreement",
+  "k_max": 50,
+  "k_min": 2,
+  "methods": [
+    "hdbscan_generic",
+    "optimized_hdbscan",
+    "score_sg",
+    "score_sg_random"
+  ],
+  "prepared_batches": 1,
+  "skipped_batches_this_run": 0,
+  "summary_rows": 4
+}

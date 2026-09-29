@@ -1,0 +1,3 @@
+dataset,family,distribution,structure,n_samples,n_features,seed,normalized,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,connected_all_k,n_components
+gamma-iid-n25000-d10-seed42,synthetic,gamma,iid,25000,10,42,False,158,5,47,38,1,1,True,1
+gamma-separated-n25000-d10-seed42,synthetic,gamma,separated_clusters,25000,10,42,False,158,3,69,45,1,1,True,1

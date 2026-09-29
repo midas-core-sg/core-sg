@@ -1,0 +1,5 @@
+dataset,family,distribution,structure,variant,n_samples,n_features,seed,normalized,k_min,k_max,n_k_values,connected_all_k,connected_rate,n_components,largest_component_size,smallest_component_size,n_edges,reinforcement_vertex_count,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,build_seconds,connectivity_check_seconds
+poisson-iid-n5000-d2-seed42,synthetic,poisson,iid,approx_knn_only,5000,2,42,False,2,50,49,False,0.0,28,2491,51,250000,0,70,0,195,70,32,34,18.02224746599859,0.6080781069995282
+poisson-iid-n5000-d2-seed42,synthetic,poisson,iid,random_sqrt_clique,5000,2,42,False,2,50,49,False,0.0,9,4448,51,252415,70,70,0,195,70,32,34,18.02224746599859,0.610831681999116
+poisson-iid-n5000-d2-seed42,synthetic,poisson,iid,score_sg_antihub,5000,2,42,False,2,50,49,False,0.0,21,2491,51,252415,70,70,0,195,70,32,34,18.02224746599859,0.5743157209999481
+poisson-separated-n5000-d2-seed42,synthetic,poisson,separated_clusters,approx_knn_only,5000,2,42,False,2,50,49,False,0.0,6,834,833,250000,0,70,13,32,3,2,2,1.1364220109990129,0.6436769800002367

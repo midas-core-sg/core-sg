@@ -1,0 +1,2 @@
+dataset,family,distribution,structure,n_samples,n_features,seed,normalized,anti_hub_count,cutoff_in_degree,candidate_tie_count,selected_from_ties_degree_only,selected_from_ties_score_tie_break,score_tie_candidate_count,connected_all_k,n_components
+gumbel-separated-n50000-d128-seed42,synthetic,gumbel,separated_clusters,50000,128,42,False,223,0,5723,223,1,1,True,1
